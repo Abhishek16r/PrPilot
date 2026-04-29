@@ -6,6 +6,12 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
     "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "postgres": "^3.4.9"
   }
 }
