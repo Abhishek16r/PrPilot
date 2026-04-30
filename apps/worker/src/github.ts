@@ -1,4 +1,4 @@
-import { App } from '@octokit/app'
+import { createAppAuth } from '@octokit/auth-app'
 import { Octokit } from '@octokit/rest'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
@@ -9,19 +9,16 @@ const privateKey = readFileSync(
   'utf-8'
 )
 
-export const githubApp = new App({
-  appId: env.GITHUB_APP_ID,
-  privateKey,
-  webhooks: {
-    secret: env.GITHUB_WEBHOOK_SECRET,
-  },
-})
-
 export async function getInstallationOctokit(installationId: number) {
-  const response = await githubApp.octokit.rest.apps.createInstallationAccessToken({
-    installation_id: installationId,
+  const octokit = new Octokit({
+    authStrategy: createAppAuth,
+    auth: {
+      appId: env.GITHUB_APP_ID,
+      privateKey,
+      installationId,
+    },
   })
-  return new Octokit({ auth: response.data.token })
+  return octokit
 }
 
 export async function fetchPRDiff(
