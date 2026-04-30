@@ -9,7 +9,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "hono": "^4.12.15"
+    "@octokit/app": "^16.1.2",
+    "@octokit/webhooks": "^14.2.0",
+    "dotenv": "^17.4.2",
+    "hono": "^4.12.15",
+    "zod": "^4.4.1"
   },
   "devDependencies": {
     "@types/bun": "^1.3.13",
