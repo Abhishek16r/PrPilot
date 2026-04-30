@@ -1,15 +1,14 @@
 import { App } from '@octokit/app'
+import { Octokit } from '@octokit/rest'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
 import { env } from './env'
 
-// Load private key from file
 const privateKey = readFileSync(
   resolve(process.cwd(), env.GITHUB_PRIVATE_KEY_PATH),
   'utf-8'
 )
 
-// Initialize GitHub App
 export const githubApp = new App({
   appId: env.GITHUB_APP_ID,
   privateKey,
@@ -18,12 +17,13 @@ export const githubApp = new App({
   },
 })
 
-// Get an authenticated Octokit instance for a specific installation
 export async function getInstallationOctokit(installationId: number) {
-  return githubApp.getInstallationOctokit(installationId)
+  const response = await githubApp.octokit.rest.apps.createInstallationAccessToken({
+    installation_id: installationId,
+  })
+  return new Octokit({ auth: response.data.token })
 }
 
-// Fetch the full diff for a PR
 export async function fetchPRDiff(
   installationId: number,
   owner: string,
@@ -34,7 +34,6 @@ export async function fetchPRDiff(
 
   console.log(`📡 Fetching diff for ${owner}/${repo}#${pullNumber}`)
 
-  // Fetch list of files changed in the PR
   const { data: files } = await octokit.rest.pulls.listFiles({
     owner,
     repo,
@@ -44,7 +43,6 @@ export async function fetchPRDiff(
 
   console.log(`📁 Found ${files.length} changed files`)
 
-  // Fetch PR details
   const { data: pr } = await octokit.rest.pulls.get({
     owner,
     repo,
