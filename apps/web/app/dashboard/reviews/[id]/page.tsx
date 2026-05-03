@@ -2,6 +2,7 @@ import { getSession } from '../../../lib/session'
 import { redirect } from 'next/navigation'
 import { sql } from '../../../lib/db'
 import Link from 'next/link'
+import NavHeader from './../../../components/NavHeader'
 
 const SEVERITY_COLOR: Record<string, string> = {
   critical: '#ef4444',
@@ -47,6 +48,7 @@ export default async function ReviewDetailPage({
 
   if (prs.length === 0) redirect('/dashboard')
   const pr = prs[0]
+  if (!pr) redirect('/dashboard')
 
   const reviews = await sql`
     SELECT * FROM reviews WHERE pr_id = ${id}
@@ -61,7 +63,7 @@ export default async function ReviewDetailPage({
   ` : []
 
   const scoreColor = (pr.overall_score ?? 0) >= 80 ? '#4ade80' :
-                     (pr.overall_score ?? 0) >= 60 ? '#facc15' : '#f87171'
+    (pr.overall_score ?? 0) >= 60 ? '#facc15' : '#f87171'
 
   return (
     <div style={{
@@ -71,24 +73,7 @@ export default async function ReviewDetailPage({
       fontFamily: 'system-ui, -apple-system, sans-serif',
     }}>
       {/* Header */}
-      <div style={{
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
-        padding: '1rem 2rem',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Link href="/dashboard" style={{ color: '#64748b', textDecoration: 'none', fontSize: '0.9rem' }}>
-            ← Back to Dashboard
-          </Link>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img src={session.avatarUrl} alt={session.username}
-            style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
-          <span style={{ fontSize: '0.9rem', color: '#94a3b8' }}>{session.username}</span>
-        </div>
-      </div>
+      <NavHeader currentPage="dashboard" />
 
       <div style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto' }}>
 

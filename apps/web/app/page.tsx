@@ -1,6 +1,25 @@
 import Link from 'next/link'
+import { sql } from './lib/db'
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Fetch real stats
+  let totalReviews = 0
+  let avgScore = 0
+  let totalIssues = 0
+
+  try {
+    const reviewCount = await sql`SELECT COUNT(*) as count FROM pull_requests`
+    totalReviews = Number(reviewCount[0]?.count ?? 0)
+
+    const scoreAvg = await sql`SELECT ROUND(AVG(overall_score)) as avg FROM reviews`
+    avgScore = Number(scoreAvg[0]?.avg ?? 0)
+
+    const issueCount = await sql`SELECT COUNT(*) as count FROM comments`
+    totalIssues = Number(issueCount[0]?.count ?? 0)
+  } catch {
+    // DB not available, use defaults
+  }
+
   return (
     <main style={{
       minHeight: '100vh',
@@ -20,8 +39,8 @@ export default function HomePage() {
           display: 'inline-flex',
           alignItems: 'center',
           gap: '6px',
-          background: 'rgba(99, 102, 241, 0.15)',
-          border: '1px solid rgba(99, 102, 241, 0.3)',
+          background: 'rgba(99,102,241,0.15)',
+          border: '1px solid rgba(99,102,241,0.3)',
           borderRadius: '999px',
           padding: '6px 16px',
           fontSize: '13px',
@@ -29,34 +48,28 @@ export default function HomePage() {
           marginBottom: '2rem',
         }}>
           <span>✨</span>
-          <span>AI-Powered Code Reviews</span>
+          <span>AI-Powered Code Reviews — Free Forever</span>
         </div>
 
-        {/* Logo + Title */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <div style={{ fontSize: '4rem', marginBottom: '0.5rem' }}>🤖</div>
-          <h1 style={{
-            fontSize: '3.5rem',
-            fontWeight: '800',
-            background: 'linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            lineHeight: 1.2,
-            marginBottom: '1rem',
-          }}>
-            PRPilot
-          </h1>
-          <p style={{
-            fontSize: '1.2rem',
-            color: '#94a3b8',
-            lineHeight: 1.6,
-          }}>
-            Senior developer reviews every PR automatically.<br />
-            Catches bugs, security issues, and bad patterns instantly.
-          </p>
-        </div>
+        {/* Title */}
+        <div style={{ fontSize: '4rem', marginBottom: '0.5rem' }}>🤖</div>
+        <h1 style={{
+          fontSize: '3.5rem',
+          fontWeight: '800',
+          background: 'linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          lineHeight: 1.2,
+          marginBottom: '1rem',
+        }}>
+          PRPilot
+        </h1>
+        <p style={{ fontSize: '1.2rem', color: '#94a3b8', lineHeight: 1.6, marginBottom: '2rem' }}>
+          Senior developer reviews every PR automatically.<br />
+          Catches bugs, security issues, and bad patterns instantly.
+        </p>
 
-        {/* Feature Cards */}
+        {/* Features */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
@@ -67,21 +80,21 @@ export default function HomePage() {
             { icon: '🐛', title: 'Bug Detection', desc: 'Catches logic errors before merge' },
             { icon: '🔒', title: 'Security Scan', desc: 'Spots vulnerabilities instantly' },
             { icon: '📊', title: 'Score & Track', desc: 'Watch quality improve over time' },
-          ].map((feature) => (
-            <div key={feature.title} style={{
+          ].map((f) => (
+            <div key={f.title} style={{
               background: 'rgba(255,255,255,0.05)',
               border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: '16px',
               padding: '1.5rem 1rem',
             }}>
-              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{feature.icon}</div>
-              <div style={{ fontWeight: '600', fontSize: '0.95rem', marginBottom: '0.25rem' }}>{feature.title}</div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{feature.desc}</div>
+              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{f.icon}</div>
+              <div style={{ fontWeight: '600', fontSize: '0.95rem', marginBottom: '0.25rem' }}>{f.title}</div>
+              <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{f.desc}</div>
             </div>
           ))}
         </div>
 
-        {/* CTA Button */}
+        {/* CTA */}
         <Link href="/api/auth/login" style={{
           display: 'inline-flex',
           alignItems: 'center',
@@ -93,7 +106,6 @@ export default function HomePage() {
           fontWeight: '700',
           fontSize: '1rem',
           textDecoration: 'none',
-          transition: 'transform 0.2s',
           boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
         }}>
           <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
@@ -106,7 +118,7 @@ export default function HomePage() {
           Free forever · No credit card required · Open source
         </p>
 
-        {/* Stats */}
+        {/* Real Stats */}
         <div style={{
           display: 'flex',
           justifyContent: 'center',
@@ -116,9 +128,9 @@ export default function HomePage() {
           borderTop: '1px solid rgba(255,255,255,0.08)',
         }}>
           {[
-            { value: '$0', label: 'Monthly cost' },
-            { value: '<60s', label: 'Review time' },
-            { value: '100%', label: 'Automated' },
+            { value: totalReviews > 0 ? `${totalReviews}+` : '$0', label: totalReviews > 0 ? 'PRs Reviewed' : 'Monthly cost' },
+            { value: avgScore > 0 ? `${avgScore}/100` : '<60s', label: avgScore > 0 ? 'Avg Score' : 'Review time' },
+            { value: totalIssues > 0 ? `${totalIssues}+` : '100%', label: totalIssues > 0 ? 'Issues Found' : 'Automated' },
           ].map((stat) => (
             <div key={stat.label}>
               <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#a5b4fc' }}>{stat.value}</div>

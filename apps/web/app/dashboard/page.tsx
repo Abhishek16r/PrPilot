@@ -2,15 +2,12 @@ import { getSession } from '../lib/session'
 import { redirect } from 'next/navigation'
 import { sql } from '../lib/db'
 import Link from 'next/link'
+import Header from '../components/Header'
 
 export default async function DashboardPage() {
   const session = await getSession()
+  if (!session) redirect('/')
 
-  if (!session) {
-    redirect('/')
-  }
-
-  // Fetch recent reviews from DB
   const recentReviews = await sql`
     SELECT 
       pr.id,
@@ -32,6 +29,11 @@ export default async function DashboardPage() {
     ? Math.round(recentReviews.reduce((sum: number, r: any) => sum + (r.overall_score ?? 0), 0) / totalReviews)
     : 0
 
+  const issuesCount = await sql`
+    SELECT COUNT(*) as count FROM comments
+  `
+  const totalIssues = Number(issuesCount[0]?.count ?? 0)
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -39,48 +41,13 @@ export default async function DashboardPage() {
       color: 'white',
       fontFamily: 'system-ui, -apple-system, sans-serif',
     }}>
-      {/* Header */}
-      <div style={{
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
-        padding: '1rem 2rem',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span style={{ fontSize: '1.5rem' }}>🤖</span>
-          <span style={{ fontWeight: '700', fontSize: '1.1rem' }}>PRPilot</span>
-          <Link href="/dashboard/analytics" style={{
-            color: '#64748b',
-            textDecoration: 'none',
-            fontSize: '0.9rem',
-          }}>
-            Analytics
-          </Link>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img
-            src={session.avatarUrl}
-            alt={session.username}
-            style={{ width: '32px', height: '32px', borderRadius: '50%' }}
-          />
-          <span style={{ fontSize: '0.9rem', color: '#94a3b8' }}>{session.username}</span>
-          <Link href="/api/auth/logout" style={{
-            fontSize: '0.8rem',
-            color: '#475569',
-            textDecoration: 'none',
-            padding: '4px 10px',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '6px',
-            marginLeft: '8px',
-          }}>
-            Logout
-          </Link>
-        </div>
-      </div>
+      <Header
+        username={session.username}
+        avatarUrl={session.avatarUrl}
+        currentPage="dashboard"
+      />
 
       <div style={{ padding: '2rem', maxWidth: '1100px', margin: '0 auto' }}>
-        {/* Welcome */}
         <h1 style={{ fontSize: '1.8rem', fontWeight: '700', marginBottom: '0.25rem' }}>
           Welcome back, {session.username} 👋
         </h1>
@@ -91,23 +58,27 @@ export default async function DashboardPage() {
         {/* Stats */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
+          gridTemplateColumns: 'repeat(4, 1fr)',
           gap: '1rem',
           marginBottom: '2rem',
         }}>
           {[
-            { label: 'Total Reviews', value: totalReviews, icon: '📋' },
-            { label: 'Average Score', value: `${avgScore}/100`, icon: '📊' },
-            { label: 'Status', value: 'Active', icon: '✅' },
+            { label: 'Total Reviews', value: totalReviews, icon: '📋', color: '#6366f1' },
+            { label: 'Average Score', value: `${avgScore}/100`, icon: '📊', color: avgScore >= 70 ? '#22c55e' : avgScore >= 50 ? '#eab308' : '#ef4444' },
+            { label: 'Issues Found', value: totalIssues, icon: '🐛', color: '#f97316' },
+            { label: 'Status', value: 'Active', icon: '✅', color: '#22c55e' },
           ].map((stat) => (
             <div key={stat.label} style={{
-              background: 'rgba(255,255,255,0.05)',
+              background: 'rgba(255,255,255,0.03)',
               border: '1px solid rgba(255,255,255,0.08)',
               borderRadius: '16px',
               padding: '1.5rem',
+              transition: 'border-color 0.2s',
             }}>
-              <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{stat.icon}</div>
-              <div style={{ fontSize: '1.8rem', fontWeight: '700', marginBottom: '0.25rem' }}>{stat.value}</div>
+              <div style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>{stat.icon}</div>
+              <div style={{ fontSize: '1.8rem', fontWeight: '700', marginBottom: '0.25rem', color: stat.color }}>
+                {stat.value}
+              </div>
               <div style={{ fontSize: '0.85rem', color: '#64748b' }}>{stat.label}</div>
             </div>
           ))}
@@ -115,7 +86,7 @@ export default async function DashboardPage() {
 
         {/* Recent Reviews */}
         <div style={{
-          background: 'rgba(255,255,255,0.03)',
+          background: 'rgba(255,255,255,0.02)',
           border: '1px solid rgba(255,255,255,0.08)',
           borderRadius: '16px',
           overflow: 'hidden',
@@ -129,9 +100,7 @@ export default async function DashboardPage() {
           }}>
             <h2 style={{ fontSize: '1rem', fontWeight: '600' }}>Recent Reviews</h2>
             <Link href="/dashboard/analytics" style={{
-              fontSize: '0.8rem',
-              color: '#6366f1',
-              textDecoration: 'none',
+              fontSize: '0.8rem', color: '#6366f1', textDecoration: 'none',
             }}>
               View Analytics →
             </Link>
@@ -139,24 +108,24 @@ export default async function DashboardPage() {
 
           {recentReviews.length === 0 ? (
             <div style={{ padding: '3rem', textAlign: 'center', color: '#475569' }}>
-              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔍</div>
-              <div>No reviews yet — open a PR to get started!</div>
+              <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🔍</div>
+              <div style={{ fontWeight: '500', marginBottom: '0.5rem' }}>No reviews yet</div>
+              <div style={{ fontSize: '0.85rem' }}>Open a PR on a connected repo to get started</div>
             </div>
           ) : (
             recentReviews.map((review: any) => (
               <Link key={review.id} href={`/dashboard/reviews/${review.id}`} style={{
                 padding: '1rem 1.5rem',
-                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                borderBottom: '1px solid rgba(255,255,255,0.04)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 textDecoration: 'none',
                 color: 'inherit',
                 cursor: 'pointer',
-                transition: 'background 0.15s',
               }}>
-                <div>
-                  <div style={{ fontWeight: '500', marginBottom: '0.25rem' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: '500', marginBottom: '0.25rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {review.title}
                   </div>
                   <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
@@ -164,15 +133,16 @@ export default async function DashboardPage() {
                   </div>
                 </div>
                 <div style={{
-                  background: (review.overall_score ?? 0) >= 80 ? 'rgba(34,197,94,0.15)' :
-                    (review.overall_score ?? 0) >= 60 ? 'rgba(234,179,8,0.15)' :
-                      'rgba(239,68,68,0.15)',
+                  background: (review.overall_score ?? 0) >= 80 ? 'rgba(34,197,94,0.12)' :
+                    (review.overall_score ?? 0) >= 60 ? 'rgba(234,179,8,0.12)' : 'rgba(239,68,68,0.12)',
                   color: (review.overall_score ?? 0) >= 80 ? '#4ade80' :
                     (review.overall_score ?? 0) >= 60 ? '#facc15' : '#f87171',
                   padding: '4px 12px',
                   borderRadius: '999px',
                   fontSize: '0.85rem',
                   fontWeight: '600',
+                  flexShrink: 0,
+                  marginLeft: '1rem',
                 }}>
                   {review.overall_score ?? 'N/A'}/100
                 </div>
