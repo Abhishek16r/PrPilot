@@ -1,10 +1,10 @@
 import { Hono } from 'hono'
 import { env } from './env'
 import { webhooks } from './webhook'
+import { startWorker } from './processor'
 
 const app = new Hono()
 
-// Health check
 app.get('/', (c) => {
   return c.json({
     status: 'ok',
@@ -20,7 +20,6 @@ app.get('/health', (c) => {
   })
 })
 
-// GitHub webhook receiver
 app.post('/webhook/github', async (c) => {
   const signature = c.req.header('x-hub-signature-256')
   const event = c.req.header('x-github-event')
@@ -37,7 +36,6 @@ app.post('/webhook/github', async (c) => {
       signature,
       payload: body,
     })
-
     return c.json({ status: 'ok' })
   } catch (error) {
     console.error('Webhook verification failed:', error)
@@ -45,17 +43,12 @@ app.post('/webhook/github', async (c) => {
   }
 })
 
+// Start the BullMQ worker
+startWorker()
+
 console.log(`🚀 PRPilot worker running on port ${env.PORT}`)
 
 export default {
   port: parseInt(env.PORT),
   fetch: app.fetch,
-}
-// webhook test
-// diff fetch test
-// test 3
-// test 4
-// test 5
-// test 6
-//ai review test
-// trigger webhook again
+}// test bullmq queue

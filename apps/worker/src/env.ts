@@ -13,6 +13,8 @@ const envSchema = z.object({
   GITHUB_WEBHOOK_SECRET: z.string().min(1),
   GITHUB_PRIVATE_KEY_PATH: z.string().min(1),
   ANTHROPIC_API_KEY: z.string().min(1),
+  UPSTASH_REDIS_REST_URL: z.string().min(1),
+  UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
 })
 
 const parsed = envSchema.safeParse(process.env)
