@@ -20,21 +20,28 @@ export async function saveReviewToDb(
 
     // Step 1: Find or create repo record
     const existingRepo = await sql`
-      SELECT id FROM repos WHERE github_repo_id = ${repoFullName} LIMIT 1
+    SELECT id FROM repos WHERE github_repo_id = ${repoFullName} LIMIT 1
     `
 
     let repoId: string
 
     if (existingRepo.length === 0) {
-      const newRepo = await sql`
+    // First ensure a system user exists
+    await sql`
+        INSERT INTO users (id, github_id, username, access_token)
+        VALUES ('system-user', 'system', 'system', 'system')
+        ON CONFLICT (id) DO NOTHING
+    `
+
+    const newRepo = await sql`
         INSERT INTO repos (id, user_id, github_repo_id, full_name, is_active, default_branch)
-        VALUES (gen_random_uuid(), 'system', ${repoFullName}, ${repoFullName}, true, 'main')
+        VALUES (gen_random_uuid(), 'system-user', ${repoFullName}, ${repoFullName}, true, 'main')
         RETURNING id
-      `
-      repoId = newRepo[0].id as string
-      console.log(`📁 Created new repo record: ${repoFullName}`)
+    `
+    repoId = newRepo[0].id as string
+    console.log(`📁 Created new repo record: ${repoFullName}`)
     } else {
-      repoId = existingRepo[0].id as string
+    repoId = existingRepo[0].id as string
     }
 
     // Step 2: Find or create pull request record
