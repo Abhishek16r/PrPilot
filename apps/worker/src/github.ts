@@ -2,6 +2,7 @@ import { createAppAuth } from '@octokit/auth-app'
 import { Octokit } from '@octokit/rest'
 import { env } from './env'
 
+// Updated Key
 const privateKey = process.env.GITHUB_PRIVATE_KEY
   ?? require('fs').readFileSync(
       require('path').resolve(process.cwd(), env.GITHUB_PRIVATE_KEY_PATH),
