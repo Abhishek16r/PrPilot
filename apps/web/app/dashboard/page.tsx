@@ -47,9 +47,16 @@ export default async function DashboardPage() {
         alignItems: 'center',
         justifyContent: 'space-between',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <span style={{ fontSize: '1.5rem' }}>🤖</span>
           <span style={{ fontWeight: '700', fontSize: '1.1rem' }}>PRPilot</span>
+          <Link href="/dashboard/analytics" style={{
+            color: '#64748b',
+            textDecoration: 'none',
+            fontSize: '0.9rem',
+          }}>
+            Analytics
+          </Link>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <img
@@ -113,8 +120,21 @@ export default async function DashboardPage() {
           borderRadius: '16px',
           overflow: 'hidden',
         }}>
-          <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{
+            padding: '1.25rem 1.5rem',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
             <h2 style={{ fontSize: '1rem', fontWeight: '600' }}>Recent Reviews</h2>
+            <Link href="/dashboard/analytics" style={{
+              fontSize: '0.8rem',
+              color: '#6366f1',
+              textDecoration: 'none',
+            }}>
+              View Analytics →
+            </Link>
           </div>
 
           {recentReviews.length === 0 ? (
