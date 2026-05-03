@@ -2,7 +2,7 @@ import { getSession } from '../lib/session'
 import { redirect } from 'next/navigation'
 import { sql } from '../lib/db'
 import Link from 'next/link'
-import Header from '../components/Header'
+import NavHeader from '../components/NavHeader'
 
 export default async function DashboardPage() {
   const session = await getSession()
@@ -10,14 +10,9 @@ export default async function DashboardPage() {
 
   const recentReviews = await sql`
     SELECT 
-      pr.id,
-      pr.github_pr_number,
-      pr.title,
-      pr.author_github_login,
-      pr.overall_score,
-      pr.status,
-      pr.created_at,
-      r.full_name as repo_name
+      pr.id, pr.github_pr_number, pr.title,
+      pr.author_github_login, pr.overall_score,
+      pr.created_at, r.full_name as repo_name
     FROM pull_requests pr
     JOIN repos r ON pr.repo_id = r.id
     ORDER BY pr.created_at DESC
@@ -29,57 +24,47 @@ export default async function DashboardPage() {
     ? Math.round(recentReviews.reduce((sum: number, r: any) => sum + (r.overall_score ?? 0), 0) / totalReviews)
     : 0
 
-  const issuesCount = await sql`
-    SELECT COUNT(*) as count FROM comments
-  `
+  const issuesCount = await sql`SELECT COUNT(*) as count FROM comments`
   const totalIssues = Number(issuesCount[0]?.count ?? 0)
 
-  return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#0f0f1a',
-      color: 'white',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
-    }}>
-      <Header
-        username={session.username}
-        avatarUrl={session.avatarUrl}
-        currentPage="dashboard"
-      />
+  const reposCount = await sql`SELECT COUNT(*) as count FROM repos WHERE is_active = true`
+  const totalRepos = Number(reposCount[0]?.count ?? 0)
 
-      <div style={{ padding: '2rem', maxWidth: '1100px', margin: '0 auto' }}>
-        <h1 style={{ fontSize: '1.8rem', fontWeight: '700', marginBottom: '0.25rem' }}>
+  const scoreColor = avgScore >= 80 ? '#4ade80' : avgScore >= 60 ? '#fbbf24' : '#f87171'
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#0d0d14', color: 'white', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+      <NavHeader currentPage="dashboard" username={session.username} avatarUrl={session.avatarUrl} />
+
+      <div style={{ padding: '28px', maxWidth: '1200px', margin: '0 auto' }}>
+        <h1 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '4px' }}>
           Welcome back, {session.username} 👋
         </h1>
-        <p style={{ color: '#64748b', marginBottom: '2rem' }}>
-          Here's an overview of your PR reviews
+        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.35)', marginBottom: '24px' }}>
+          Here's your code quality overview
         </p>
 
         {/* Stats */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '1rem',
-          marginBottom: '2rem',
-        }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
           {[
-            { label: 'Total Reviews', value: totalReviews, icon: '📋', color: '#6366f1' },
-            { label: 'Average Score', value: `${avgScore}/100`, icon: '📊', color: avgScore >= 70 ? '#22c55e' : avgScore >= 50 ? '#eab308' : '#ef4444' },
-            { label: 'Issues Found', value: totalIssues, icon: '🐛', color: '#f97316' },
-            { label: 'Status', value: 'Active', icon: '✅', color: '#22c55e' },
+            { label: 'Total Reviews', value: totalReviews, sub: 'all time', color: '#818cf8' },
+            { label: 'Average Score', value: `${avgScore}/100`, sub: avgScore > 0 ? '↑ improving' : 'no data yet', color: scoreColor },
+            { label: 'Issues Found', value: totalIssues, sub: 'across all PRs', color: '#fb923c' },
+            { label: 'Active Repos', value: totalRepos, sub: 'connected', color: '#2dd4bf' },
           ].map((stat) => (
             <div key={stat.label} style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '16px',
-              padding: '1.5rem',
-              transition: 'border-color 0.2s',
+              background: 'rgba(255,255,255,0.04)',
+              border: '0.5px solid rgba(255,255,255,0.08)',
+              borderRadius: '12px',
+              padding: '16px',
             }}>
-              <div style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>{stat.icon}</div>
-              <div style={{ fontSize: '1.8rem', fontWeight: '700', marginBottom: '0.25rem', color: stat.color }}>
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {stat.label}
+              </div>
+              <div style={{ fontSize: '24px', fontWeight: '600', color: stat.color, marginBottom: '2px' }}>
                 {stat.value}
               </div>
-              <div style={{ fontSize: '0.85rem', color: '#64748b' }}>{stat.label}</div>
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>{stat.sub}</div>
             </div>
           ))}
         </div>
@@ -87,67 +72,69 @@ export default async function DashboardPage() {
         {/* Recent Reviews */}
         <div style={{
           background: 'rgba(255,255,255,0.02)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: '16px',
+          border: '0.5px solid rgba(255,255,255,0.07)',
+          borderRadius: '12px',
           overflow: 'hidden',
         }}>
           <div style={{
-            padding: '1.25rem 1.5rem',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            padding: '14px 18px',
+            borderBottom: '0.5px solid rgba(255,255,255,0.06)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
-            <h2 style={{ fontSize: '1rem', fontWeight: '600' }}>Recent Reviews</h2>
-            <Link href="/dashboard/analytics" style={{
-              fontSize: '0.8rem', color: '#6366f1', textDecoration: 'none',
-            }}>
+            <span style={{ fontSize: '13px', fontWeight: '500' }}>Recent Reviews</span>
+            <Link href="/dashboard/analytics" style={{ fontSize: '12px', color: '#818cf8', textDecoration: 'none' }}>
               View Analytics →
             </Link>
           </div>
 
           {recentReviews.length === 0 ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: '#475569' }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🔍</div>
-              <div style={{ fontWeight: '500', marginBottom: '0.5rem' }}>No reviews yet</div>
-              <div style={{ fontSize: '0.85rem' }}>Open a PR on a connected repo to get started</div>
+            <div style={{ padding: '48px', textAlign: 'center', color: 'rgba(255,255,255,0.25)' }}>
+              <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔍</div>
+              <div style={{ fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>No reviews yet</div>
+              <div style={{ fontSize: '12px' }}>Open a PR on a connected repo to get started</div>
             </div>
           ) : (
-            recentReviews.map((review: any) => (
-              <Link key={review.id} href={`/dashboard/reviews/${review.id}`} style={{
-                padding: '1rem 1.5rem',
-                borderBottom: '1px solid rgba(255,255,255,0.04)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                textDecoration: 'none',
-                color: 'inherit',
-                cursor: 'pointer',
-              }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: '500', marginBottom: '0.25rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {review.title}
-                  </div>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                    {review.repo_name} · #{review.github_pr_number} · by {review.author_github_login}
-                  </div>
-                </div>
-                <div style={{
-                  background: (review.overall_score ?? 0) >= 80 ? 'rgba(34,197,94,0.12)' :
-                    (review.overall_score ?? 0) >= 60 ? 'rgba(234,179,8,0.12)' : 'rgba(239,68,68,0.12)',
-                  color: (review.overall_score ?? 0) >= 80 ? '#4ade80' :
-                    (review.overall_score ?? 0) >= 60 ? '#facc15' : '#f87171',
-                  padding: '4px 12px',
-                  borderRadius: '999px',
-                  fontSize: '0.85rem',
-                  fontWeight: '600',
-                  flexShrink: 0,
-                  marginLeft: '1rem',
+            recentReviews.map((review: any) => {
+              const score = review.overall_score ?? 0
+              const scoreStyle = score >= 80
+                ? { bg: 'rgba(74,222,128,0.12)', color: '#4ade80' }
+                : score >= 60
+                  ? { bg: 'rgba(251,191,36,0.12)', color: '#fbbf24' }
+                  : { bg: 'rgba(248,113,113,0.12)', color: '#f87171' }
+
+              return (
+                <Link key={review.id} href={`/dashboard/reviews/${review.id}`} style={{
+                  padding: '12px 18px',
+                  borderBottom: '0.5px solid rgba(255,255,255,0.04)',
+                  display: 'flex', alignItems: 'center', gap: '12px',
+                  textDecoration: 'none', color: 'inherit', cursor: 'pointer',
                 }}>
-                  {review.overall_score ?? 'N/A'}/100
-                </div>
-              </Link>
-            ))
+                  <div style={{
+                    fontSize: '11px', fontWeight: '600',
+                    color: 'rgba(255,255,255,0.25)',
+                    background: 'rgba(255,255,255,0.06)',
+                    padding: '2px 7px', borderRadius: '4px', flexShrink: 0,
+                  }}>
+                    #{review.github_pr_number}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.85)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '2px' }}>
+                      {review.title}
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>
+                      {review.repo_name} · by {review.author_github_login}
+                    </div>
+                  </div>
+                  <div style={{
+                    padding: '3px 10px', borderRadius: '999px',
+                    fontSize: '12px', fontWeight: '600', flexShrink: 0,
+                    background: scoreStyle.bg, color: scoreStyle.color,
+                  }}>
+                    {score}/100
+                  </div>
+                </Link>
+              )
+            })
           )}
         </div>
       </div>

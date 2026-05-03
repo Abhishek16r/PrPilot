@@ -2,20 +2,20 @@ import { getSession } from '../../../lib/session'
 import { redirect } from 'next/navigation'
 import { sql } from '../../../lib/db'
 import Link from 'next/link'
-import NavHeader from './../../../components/NavHeader'
+import NavHeader from '../../../components/NavHeader'
 
 const SEVERITY_COLOR: Record<string, string> = {
-  critical: '#ef4444',
-  high: '#f97316',
-  medium: '#eab308',
-  low: '#3b82f6',
+  critical: '#f87171',
+  high: '#fb923c',
+  medium: '#fbbf24',
+  low: '#60a5fa',
 }
 
 const SEVERITY_BG: Record<string, string> = {
-  critical: 'rgba(239,68,68,0.1)',
-  high: 'rgba(249,115,22,0.1)',
-  medium: 'rgba(234,179,8,0.1)',
-  low: 'rgba(59,130,246,0.1)',
+  critical: 'rgba(248,113,113,0.12)',
+  high: 'rgba(249,115,22,0.12)',
+  medium: 'rgba(251,191,36,0.12)',
+  low: 'rgba(96,165,250,0.12)',
 }
 
 const CATEGORY_EMOJI: Record<string, string> = {
@@ -37,9 +37,7 @@ export default async function ReviewDetailPage({
   const { id } = await params
 
   const prs = await sql`
-    SELECT 
-      pr.*,
-      r.full_name as repo_name
+    SELECT pr.*, r.full_name as repo_name
     FROM pull_requests pr
     JOIN repos r ON pr.repo_id = r.id
     WHERE pr.id = ${id}
@@ -54,7 +52,6 @@ export default async function ReviewDetailPage({
     SELECT * FROM reviews WHERE pr_id = ${id}
     ORDER BY created_at DESC LIMIT 1
   `
-
   const review = reviews[0]
 
   const comments = review ? await sql`
@@ -62,30 +59,45 @@ export default async function ReviewDetailPage({
     ORDER BY severity DESC, created_at ASC
   ` : []
 
-  const scoreColor = (pr.overall_score ?? 0) >= 80 ? '#4ade80' :
-    (pr.overall_score ?? 0) >= 60 ? '#facc15' : '#f87171'
+  const score = pr.overall_score as number ?? 0
+  const scoreColor = score >= 80 ? '#4ade80' : score >= 60 ? '#fbbf24' : '#f87171'
 
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#0f0f1a',
+      background: '#0d0d14',
       color: 'white',
       fontFamily: 'system-ui, -apple-system, sans-serif',
     }}>
-      {/* Header */}
-      <NavHeader currentPage="dashboard" />
+      <NavHeader username={session.username} avatarUrl={session.avatarUrl} />
 
-      <div style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto' }}>
+      <div style={{ padding: '24px 28px', maxWidth: '1200px', margin: '0 auto' }}>
+
+        {/* Back button */}
+        <Link href="/dashboard" style={{
+          display: 'inline-flex', alignItems: 'center', gap: '6px',
+          fontSize: '13px', color: 'rgba(255,255,255,0.4)',
+          textDecoration: 'none', marginBottom: '20px',
+          padding: '6px 10px', borderRadius: '6px',
+          border: '0.5px solid rgba(255,255,255,0.08)',
+          background: 'rgba(255,255,255,0.03)',
+          transition: 'all 0.15s',
+        }}>
+          ← Back to Dashboard
+        </Link>
 
         {/* PR Info */}
-        <div style={{ marginBottom: '2rem' }}>
-          <div style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
-            {pr.repo_name as string} · PR #{pr.github_pr_number as number}
+        <div style={{ marginBottom: '20px' }}>
+          <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>{pr.repo_name as string}</span>
+            <span style={{ background: 'rgba(255,255,255,0.06)', padding: '1px 7px', borderRadius: '4px', fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.3)' }}>
+              PR #{pr.github_pr_number as number}
+            </span>
           </div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '0.5rem' }}>
+          <h1 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '6px', lineHeight: 1.3 }}>
             {pr.title as string}
           </h1>
-          <div style={{ color: '#64748b', fontSize: '0.85rem' }}>
+          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.35)' }}>
             by {pr.author_github_login as string}
           </div>
         </div>
@@ -93,25 +105,31 @@ export default async function ReviewDetailPage({
         {/* Score Card */}
         {review && (
           <div style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '16px',
-            padding: '1.5rem',
-            marginBottom: '1.5rem',
+            background: 'rgba(255,255,255,0.03)',
+            border: '0.5px solid rgba(255,255,255,0.08)',
+            borderRadius: '12px',
+            padding: '20px',
+            marginBottom: '16px',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <h2 style={{ fontSize: '1rem', fontWeight: '600' }}>Review Summary</h2>
-              <div style={{ fontSize: '2rem', fontWeight: '800', color: scoreColor }}>
-                {pr.overall_score as number}/100
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+                  Overall Score
+                </div>
+                <div style={{ fontSize: '36px', fontWeight: '700', color: scoreColor, lineHeight: 1 }}>
+                  {score}<span style={{ fontSize: '16px', opacity: 0.5 }}>/100</span>
+                </div>
+              </div>
+              <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', fontWeight: '500' }}>
+                Review Summary
               </div>
             </div>
 
-            <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, marginBottom: '16px' }}>
               {review.summary as string}
             </p>
 
-            {/* Category Scores */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
               {[
                 { label: '🐛 Bugs', score: review.bug_score as number },
                 { label: '🔒 Security', score: review.security_score as number },
@@ -120,63 +138,61 @@ export default async function ReviewDetailPage({
               ].map((cat) => (
                 <div key={cat.label} style={{
                   background: 'rgba(255,255,255,0.04)',
-                  borderRadius: '10px',
-                  padding: '0.75rem',
-                  textAlign: 'center',
+                  borderRadius: '8px', padding: '10px', textAlign: 'center',
                 }}>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem' }}>{cat.label}</div>
-                  <div style={{ fontSize: '1.2rem', fontWeight: '700' }}>{cat.score ?? 'N/A'}</div>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', marginBottom: '4px' }}>{cat.label}</div>
+                  <div style={{ fontSize: '18px', fontWeight: '600' }}>{cat.score ?? '—'}</div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Issues List */}
+        {/* Issues */}
         <div style={{
-          background: 'rgba(255,255,255,0.03)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: '16px',
+          background: 'rgba(255,255,255,0.02)',
+          border: '0.5px solid rgba(255,255,255,0.07)',
+          borderRadius: '12px',
           overflow: 'hidden',
         }}>
-          <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-            <h2 style={{ fontSize: '1rem', fontWeight: '600' }}>
+          <div style={{ padding: '14px 18px', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
+            <span style={{ fontSize: '13px', fontWeight: '500' }}>
               Issues Found ({comments.length})
-            </h2>
+            </span>
           </div>
 
           {comments.length === 0 ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: '#475569' }}>
-              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✅</div>
-              <div>No issues found — great code!</div>
+            <div style={{ padding: '48px', textAlign: 'center', color: 'rgba(255,255,255,0.25)' }}>
+              <div style={{ fontSize: '32px', marginBottom: '8px' }}>✅</div>
+              <div style={{ fontSize: '14px' }}>No issues — great code!</div>
             </div>
           ) : (
             comments.map((comment: any) => (
               <div key={comment.id} style={{
-                padding: '1.25rem 1.5rem',
-                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                padding: '14px 18px',
+                borderBottom: '0.5px solid rgba(255,255,255,0.04)',
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
                   <span style={{
-                    background: SEVERITY_BG[comment.severity] ?? 'rgba(255,255,255,0.1)',
+                    background: SEVERITY_BG[comment.severity] ?? 'rgba(255,255,255,0.08)',
                     color: SEVERITY_COLOR[comment.severity] ?? 'white',
-                    padding: '2px 8px',
-                    borderRadius: '999px',
-                    fontSize: '0.75rem',
-                    fontWeight: '600',
-                    textTransform: 'uppercase',
+                    padding: '2px 8px', borderRadius: '999px',
+                    fontSize: '11px', fontWeight: '600',
+                    textTransform: 'uppercase', letterSpacing: '0.03em',
                   }}>
                     {comment.severity}
                   </span>
-                  <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                  <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>
                     {CATEGORY_EMOJI[comment.category] ?? '📝'} {comment.category}
                   </span>
-                  <span style={{ fontSize: '0.8rem', color: '#475569', marginLeft: 'auto' }}>
-                    {comment.file_path}
-                    {comment.line ? `:${comment.line}` : ''}
+                  <span style={{
+                    fontSize: '11px', color: 'rgba(255,255,255,0.25)',
+                    marginLeft: 'auto', fontFamily: 'monospace',
+                  }}>
+                    {comment.file_path}{comment.line ? `:${comment.line}` : ''}
                   </span>
                 </div>
-                <p style={{ fontSize: '0.9rem', color: '#e2e8f0', marginBottom: '0.5rem', lineHeight: 1.5 }}>
+                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, margin: 0 }}>
                   {comment.body}
                 </p>
               </div>
