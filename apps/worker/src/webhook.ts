@@ -2,6 +2,7 @@ import { Webhooks } from '@octokit/webhooks'
 import { env } from './env'
 import { fetchPRDiff } from './github'
 import { parseDiff, formatDiffForAI } from './parser'
+import { reviewDiff } from './reviewer'
 
 export const webhooks = new Webhooks({
   secret: env.GITHUB_WEBHOOK_SECRET,
@@ -24,7 +25,7 @@ webhooks.on([
   }
 
   try {
-    // Fetch the diff from GitHub
+    // Step 1: Fetch diff
     const { files } = await fetchPRDiff(
       installation.id,
       repository.owner.login,
@@ -32,20 +33,37 @@ webhooks.on([
       pull_request.number
     )
 
-    // Parse into structured format
+    // Step 2: Parse diff
     const parsedDiff = parseDiff(files)
 
-    // Format for AI
+    if (parsedDiff.reviewableFiles.length === 0) {
+      console.log('⚠️ No reviewable files found — skipping review')
+      return
+    }
+
+    // Step 3: Format for AI
     const formattedDiff = formatDiffForAI(parsedDiff)
 
-    console.log('\n📊 Diff Summary:')
-    console.log(`   Total additions: +${parsedDiff.totalAdditions}`)
-    console.log(`   Total deletions: -${parsedDiff.totalDeletions}`)
-    console.log(`   Reviewable files: ${parsedDiff.reviewableFiles.length}`)
-    console.log('\n📝 Formatted diff preview (first 500 chars):')
-    console.log(formattedDiff.slice(0, 500))
+    // Step 4: Send to Claude for review
+    const review = await reviewDiff(
+      formattedDiff,
+      pull_request.title,
+      repository.full_name
+    )
 
-    // TODO: Week 2 — send to AI review engine
+    // Step 5: Log results (we'll post to GitHub in Day 6)
+    console.log('\n🎯 REVIEW RESULTS:')
+    console.log(`   Overall Score: ${review.overallScore}/100`)
+    console.log(`   Summary: ${review.summary}`)
+    console.log(`   Total Issues: ${review.issues.length}`)
+    
+    if (review.issues.length > 0) {
+      console.log('\n   Issues found:')
+      review.issues.forEach((issue, i) => {
+        console.log(`   ${i + 1}. [${issue.severity.toUpperCase()}] ${issue.category} in ${issue.file}`)
+        console.log(`      ${issue.comment}`)
+      })
+    }
 
   } catch (error) {
     console.error('❌ Error processing PR:', error)

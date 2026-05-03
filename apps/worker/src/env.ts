@@ -12,6 +12,7 @@ const envSchema = z.object({
   GITHUB_CLIENT_SECRET: z.string().min(1),
   GITHUB_WEBHOOK_SECRET: z.string().min(1),
   GITHUB_PRIVATE_KEY_PATH: z.string().min(1),
+  ANTHROPIC_API_KEY: z.string().min(1),
 })
 
 const parsed = envSchema.safeParse(process.env)
