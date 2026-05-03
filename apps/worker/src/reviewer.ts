@@ -5,8 +5,6 @@ const client = new Anthropic({
   apiKey: env.ANTHROPIC_API_KEY,
 })
 
-// This is the system prompt — the instructions we give Claude
-// This is the most important thing to get right
 const SYSTEM_PROMPT = `You are an expert code reviewer with 15+ years of experience.
 You review pull request diffs and provide structured, actionable feedback.
 
@@ -19,7 +17,7 @@ For each issue you find, classify it as:
 Scoring rubric (0-100):
 - Start at 100
 - Critical issue: -20 points each
-- High issue: -10 points each  
+- High issue: -10 points each
 - Medium issue: -5 points each
 - Low issue: -2 points each
 - Minimum score is 0
@@ -47,6 +45,27 @@ export interface ReviewResult {
   styleScore: number
 }
 
+// Max tokens to send to Claude — prevents context window overflow
+const MAX_DIFF_CHARS = 80000
+
+// Retry with exponential backoff
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxAttempts = 3,
+  delayMs = 1000
+): Promise<T> {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn()
+    } catch (error) {
+      if (attempt === maxAttempts) throw error
+      console.log(`⚠️ Attempt ${attempt} failed, retrying in ${delayMs}ms...`)
+      await new Promise(resolve => setTimeout(resolve, delayMs * attempt))
+    }
+  }
+  throw new Error('Max retries exceeded')
+}
+
 export async function reviewDiff(
   formattedDiff: string,
   prTitle: string,
@@ -54,13 +73,22 @@ export async function reviewDiff(
 ): Promise<ReviewResult> {
   console.log('🤖 Sending diff to Claude for review...')
 
+  // Truncate diff if too large
+  const truncatedDiff = formattedDiff.length > MAX_DIFF_CHARS
+    ? formattedDiff.slice(0, MAX_DIFF_CHARS) + '\n\n[Diff truncated due to size]'
+    : formattedDiff
+
+  if (formattedDiff.length > MAX_DIFF_CHARS) {
+    console.log(`⚠️ Diff truncated from ${formattedDiff.length} to ${MAX_DIFF_CHARS} chars`)
+  }
+
   const prompt = `Review this pull request:
 
 Repository: ${repoName}
 PR Title: ${prTitle}
 
 Code changes:
-${formattedDiff}
+${truncatedDiff}
 
 Return a JSON object with exactly this structure:
 {
@@ -82,17 +110,14 @@ Return a JSON object with exactly this structure:
   "styleScore": <number 0-100>
 }`
 
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-5',
-    max_tokens: 4096,
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      }
-    ],
-    system: SYSTEM_PROMPT,
-  })
+  const message = await withRetry(() =>
+    client.messages.create({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 4096,
+      messages: [{ role: 'user', content: prompt }],
+      system: SYSTEM_PROMPT,
+    })
+  )
 
   // Extract text from response
   const responseText = message.content
@@ -111,13 +136,21 @@ Return a JSON object with exactly this structure:
       .trim()
 
     const result = JSON.parse(cleanJson) as ReviewResult
-    
+
+    // Validate required fields
+    if (typeof result.overallScore !== 'number') {
+      throw new Error('Invalid response: missing overallScore')
+    }
+    if (!Array.isArray(result.issues)) {
+      throw new Error('Invalid response: missing issues array')
+    }
+
     console.log(`📊 Review complete — Score: ${result.overallScore}/100`)
     console.log(`   Issues found: ${result.issues.length}`)
-    
+
     return result
   } catch (error) {
-    console.error('❌ Failed to parse Claude response:', responseText)
-    throw new Error('Failed to parse AI review response')
+    console.error('❌ Failed to parse Claude response')
+    throw new Error(`Failed to parse AI review response: ${error}`)
   }
 }

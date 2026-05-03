@@ -44,13 +44,26 @@ app.post('/webhook/github', async (c) => {
 })
 
 // Start the BullMQ worker
-startWorker()
+const worker = startWorker()
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('🛑 SIGTERM received — shutting down gracefully...')
+  await worker.close()
+  console.log('✅ Worker closed')
+  process.exit(0)
+})
+
+process.on('SIGINT', async () => {
+  console.log('🛑 SIGINT received — shutting down gracefully...')
+  await worker.close()
+  console.log('✅ Worker closed')
+  process.exit(0)
+})
 
 console.log(`🚀 PRPilot worker running on port ${env.PORT}`)
 
 export default {
   port: parseInt(env.PORT),
   fetch: app.fetch,
-}// test bullmq queue
-// test db save
-// test db fix
+}// final hardening test
