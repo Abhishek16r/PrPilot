@@ -4,6 +4,7 @@ import { fetchPRDiff } from './github'
 import { parseDiff, formatDiffForAI } from './parser'
 import { reviewDiff } from './reviewer'
 import { postReviewComments } from './commenter'
+import { saveReviewToDb } from './database'
 
 export function startWorker() {
   const worker = new Worker<ReviewJobData>(
@@ -42,8 +43,20 @@ export function startWorker() {
       await job.updateProgress(50)
       const review = await reviewDiff(formattedDiff, prTitle, `${owner}/${repo}`)
 
-      // Step 5: Post comments to GitHub
-      await job.updateProgress(80)
+      // Step 5: Save to database
+      await job.updateProgress(70)
+      const { prId, reviewId } = await saveReviewToDb(
+        owner,
+        repo,
+        pullNumber,
+        prTitle,
+        authorLogin,
+        headSha,
+        review
+      )
+
+      // Step 6: Post comments to GitHub
+      await job.updateProgress(85)
       await postReviewComments(
         installationId,
         owner,
@@ -55,8 +68,14 @@ export function startWorker() {
 
       await job.updateProgress(100)
       console.log(`✅ Job ${job.id} complete — Score: ${review.overallScore}/100`)
+      console.log(`   DB: PR ${prId}, Review ${reviewId}`)
 
-      return { score: review.overallScore, issueCount: review.issues.length }
+      return {
+        score: review.overallScore,
+        issueCount: review.issues.length,
+        prId,
+        reviewId
+      }
     },
     {
       connection,
