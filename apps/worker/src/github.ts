@@ -1,13 +1,12 @@
 import { createAppAuth } from '@octokit/auth-app'
 import { Octokit } from '@octokit/rest'
-import { readFileSync } from 'fs'
-import { resolve } from 'path'
 import { env } from './env'
 
-const privateKey = readFileSync(
-  resolve(process.cwd(), env.GITHUB_PRIVATE_KEY_PATH),
-  'utf-8'
-)
+const privateKey = process.env.GITHUB_PRIVATE_KEY
+  ?? require('fs').readFileSync(
+      require('path').resolve(process.cwd(), env.GITHUB_PRIVATE_KEY_PATH),
+      'utf-8'
+    )
 
 export async function getInstallationOctokit(installationId: number) {
   const octokit = new Octokit({
