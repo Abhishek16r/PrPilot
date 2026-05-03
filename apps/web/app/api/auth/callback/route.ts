@@ -61,9 +61,9 @@ export async function GET(request: NextRequest) {
         )
         RETURNING id
       `
-      userId = newUser[0].id as string
+      userId = newUser[0]?.id as string
     } else {
-      userId = existingUser[0].id as string
+      userId = existingUser[0]?.id as string
       await sql`
         UPDATE users SET access_token = ${accessToken}, updated_at = NOW()
         WHERE id = ${userId}

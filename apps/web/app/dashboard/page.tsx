@@ -1,6 +1,7 @@
 import { getSession } from '../lib/session'
 import { redirect } from 'next/navigation'
 import { sql } from '../lib/db'
+import Link from 'next/link'
 
 export default async function DashboardPage() {
   const session = await getSession()
@@ -57,6 +58,17 @@ export default async function DashboardPage() {
             style={{ width: '32px', height: '32px', borderRadius: '50%' }}
           />
           <span style={{ fontSize: '0.9rem', color: '#94a3b8' }}>{session.username}</span>
+          <Link href="/api/auth/logout" style={{
+            fontSize: '0.8rem',
+            color: '#475569',
+            textDecoration: 'none',
+            padding: '4px 10px',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '6px',
+            marginLeft: '8px',
+          }}>
+            Logout
+          </Link>
         </div>
       </div>
 
@@ -112,12 +124,16 @@ export default async function DashboardPage() {
             </div>
           ) : (
             recentReviews.map((review: any) => (
-              <div key={review.id} style={{
+              <Link key={review.id} href={`/dashboard/reviews/${review.id}`} style={{
                 padding: '1rem 1.5rem',
                 borderBottom: '1px solid rgba(255,255,255,0.05)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
+                textDecoration: 'none',
+                color: 'inherit',
+                cursor: 'pointer',
+                transition: 'background 0.15s',
               }}>
                 <div>
                   <div style={{ fontWeight: '500', marginBottom: '0.25rem' }}>
@@ -129,10 +145,10 @@ export default async function DashboardPage() {
                 </div>
                 <div style={{
                   background: (review.overall_score ?? 0) >= 80 ? 'rgba(34,197,94,0.15)' :
-                               (review.overall_score ?? 0) >= 60 ? 'rgba(234,179,8,0.15)' :
-                               'rgba(239,68,68,0.15)',
+                    (review.overall_score ?? 0) >= 60 ? 'rgba(234,179,8,0.15)' :
+                      'rgba(239,68,68,0.15)',
                   color: (review.overall_score ?? 0) >= 80 ? '#4ade80' :
-                         (review.overall_score ?? 0) >= 60 ? '#facc15' : '#f87171',
+                    (review.overall_score ?? 0) >= 60 ? '#facc15' : '#f87171',
                   padding: '4px 12px',
                   borderRadius: '999px',
                   fontSize: '0.85rem',
@@ -140,7 +156,7 @@ export default async function DashboardPage() {
                 }}>
                   {review.overall_score ?? 'N/A'}/100
                 </div>
-              </div>
+              </Link>
             ))
           )}
         </div>
