@@ -1,159 +1,323 @@
-# Turborepo starter
+# 🤖 PRPilot — AI Code Review Agent for GitHub
 
-This Turborepo starter is maintained by the Turborepo core team.
+> Senior developer reviews every PR automatically. Costs $0.
 
-## Using this example
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com)
 
-Run the following command:
+**PRPilot** is an open-source GitHub App that automatically reviews every pull request using Claude AI. When a PR is opened, PRPilot fetches the diff, analyzes it for bugs, security issues, and code quality, then posts inline comments and an overall score — just like a senior developer would.
 
-```sh
-npx create-turbo@latest
+---
+
+## ✨ Features
+
+- 🐛 **Bug Detection** — Catches logic errors, null pointer issues, and edge cases
+- 🔒 **Security Scanning** — Spots SQL injection, XSS, and other vulnerabilities
+- ⚡ **Performance Review** — Identifies N+1 queries, inefficient loops, and memory leaks
+- 🎨 **Style Feedback** — Enforces consistent code patterns and best practices
+- 📊 **PR Scoring** — Overall score (0-100) with category breakdown
+- 📈 **Analytics Dashboard** — Track code quality trends over time
+- 🔄 **Async Processing** — BullMQ job queue so reviews never block webhooks
+- 💾 **Review History** — All reviews persisted in PostgreSQL
+
+---
+
+## 🚀 Live Demo
+
+- **Dashboard:** [pr-pilot-web.vercel.app](https://pr-pilot-web.vercel.app)
+- **Worker:** [prpilotworker-production.up.railway.app](https://prpilotworker-production.up.railway.app)
+
+---
+
+## 🏗️ Architecture
+
+```
+GitHub PR opened
+       │
+       ▼
+Webhook (Hono.js on Bun)
+       │
+       ▼
+BullMQ Job Queue (Upstash Redis)
+       │
+       ▼
+Background Worker
+       │
+       ├──► GitHub API (fetch diff)
+       │
+       ├──► Claude API (AI review)
+       │
+       ├──► GitHub API (post comments)
+       │
+       └──► Neon PostgreSQL (save results)
+                   │
+                   ▼
+         Next.js Dashboard
 ```
 
-## What's inside?
+---
 
-This Turborepo includes the following packages/apps:
+## 🛠️ Tech Stack
 
-### Apps and Packages
+| Layer | Technology | Why |
+|-------|-----------|-----|
+| **Runtime** | Bun | 3x faster than Node.js, native TypeScript |
+| **Backend** | Hono.js | Ultrafast, edge-ready, TypeScript-first |
+| **Job Queue** | BullMQ + Upstash Redis | Async processing with retries |
+| **AI Engine** | Claude API (Sonnet) | Best-in-class code reasoning |
+| **Database** | Neon PostgreSQL + Drizzle ORM | Serverless, type-safe queries |
+| **Frontend** | Next.js 16 (App Router) | RSC, server actions, streaming |
+| **Auth** | GitHub OAuth | Native GitHub integration |
+| **Charts** | Recharts | Composable React charts |
+| **Monorepo** | Turborepo | Shared types, parallel builds |
+| **Deployment** | Railway + Vercel | Zero-config, auto-deploy |
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+---
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+## 📁 Project Structure
 
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+```
+prpilot/
+├── apps/
+│   ├── web/                  # Next.js 16 dashboard
+│   │   ├── app/
+│   │   │   ├── dashboard/    # Main dashboard + analytics
+│   │   │   ├── api/          # Auth + session endpoints
+│   │   │   └── components/   # Shared UI components
+│   └── worker/               # Bun + Hono.js backend
+│       └── src/
+│           ├── index.ts      # Server entry point
+│           ├── webhook.ts    # GitHub webhook handler
+│           ├── github.ts     # GitHub API service
+│           ├── reviewer.ts   # Claude AI review engine
+│           ├── processor.ts  # BullMQ job processor
+│           ├── commenter.ts  # GitHub comment poster
+│           ├── parser.ts     # Diff parser
+│           ├── database.ts   # Database service
+│           ├── queue.ts      # BullMQ queue setup
+│           └── env.ts        # Zod env validation
+├── packages/
+│   ├── db/                   # Drizzle schema + migrations
+│   ├── typescript-config/    # Shared TS config
+│   └── eslint-config/        # Shared ESLint config
+├── Dockerfile                # Railway deployment
+└── turbo.json
 ```
 
-Without global `turbo`, use your package manager:
+---
 
-```sh
-cd my-turborepo
-npx turbo build
-bun dlx turbo build
-bun exec turbo build
+## 🚦 Getting Started
+
+### Prerequisites
+
+- [Bun](https://bun.sh) v1.0+
+- [Node.js](https://nodejs.org) v18+ (for some tooling)
+- A [GitHub account](https://github.com)
+- A [Neon](https://neon.tech) account (free)
+- An [Anthropic API key](https://console.anthropic.com)
+- An [Upstash](https://upstash.com) account (free)
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Abhishek16r/PrPilot.git
+cd PrPilot
+bun install
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+### 2. Set up the database
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+Create a free PostgreSQL database at [neon.tech](https://neon.tech), then:
 
-```sh
-turbo build --filter=docs
+```bash
+cd packages/db
+cp .env.example .env
+# Add your DATABASE_URL to .env
+bun run db:generate
+bunx drizzle-kit push
 ```
 
-Without global `turbo`:
+### 3. Create a GitHub App
 
-```sh
-npx turbo build --filter=docs
-bun exec turbo build --filter=docs
-bun exec turbo build --filter=docs
+1. Go to [github.com/settings/apps/new](https://github.com/settings/apps/new)
+2. Set **Webhook URL** to your ngrok URL + `/webhook/github`
+3. Set permissions: `Pull requests: Read & write`, `Contents: Read`
+4. Subscribe to events: `Pull request`
+5. Generate a private key and download the `.pem` file
+
+### 4. Configure environment variables
+
+```bash
+cd apps/worker
+cp .env.example .env
 ```
 
-### Develop
+Fill in `apps/worker/.env`:
 
-To develop all apps and packages, run the following command:
+```env
+# Database
+DATABASE_URL=postgresql://...
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+# GitHub App
+GITHUB_APP_ID=your_app_id
+GITHUB_CLIENT_ID=your_client_id
+GITHUB_CLIENT_SECRET=your_client_secret
+GITHUB_WEBHOOK_SECRET=your_webhook_secret
+GITHUB_PRIVATE_KEY_PATH=./private-key.pem
 
-```sh
-cd my-turborepo
-turbo dev
+# AI
+ANTHROPIC_API_KEY=sk-ant-...
+
+# Redis
+UPSTASH_REDIS_REST_URL=https://...
+UPSTASH_REDIS_REST_TOKEN=...
 ```
 
-Without global `turbo`, use your package manager:
+Fill in `apps/web/.env.local`:
 
-```sh
-cd my-turborepo
-npx turbo dev
-bun exec turbo dev
-bun exec turbo dev
+```env
+DATABASE_URL=postgresql://...
+GITHUB_CLIENT_ID=your_client_id
+GITHUB_CLIENT_SECRET=your_client_secret
+GITHUB_REDIRECT_URI=http://localhost:3000/api/auth/callback
+SESSION_SECRET=your_random_secret
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+### 5. Start development servers
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
+In terminal 1 (worker):
+```bash
+cd apps/worker
+bun run dev
 ```
 
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-bun exec turbo dev --filter=web
-bun exec turbo dev --filter=web
+In terminal 2 (dashboard):
+```bash
+cd apps/web
+bun run dev
 ```
 
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
+In terminal 3 (ngrok tunnel):
+```bash
+ngrok http 3001
 ```
 
-Without global `turbo`, use your package manager:
+Update your GitHub App's webhook URL with the ngrok URL.
 
-```sh
-cd my-turborepo
-npx turbo login
-bun exec turbo login
-bun exec turbo login
+---
+
+## 🌐 Deployment
+
+### Worker → Railway
+
+1. Connect your GitHub repo to [Railway](https://railway.app)
+2. Set root directory to `/` (uses the `Dockerfile`)
+3. Add all environment variables from `apps/worker/.env`
+4. For `GITHUB_PRIVATE_KEY` — convert the `.pem` file to a single line:
+   ```bash
+   awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' private-key.pem
+   ```
+5. Deploy and copy the Railway URL
+
+### Dashboard → Vercel
+
+1. Import your GitHub repo to [Vercel](https://vercel.com)
+2. Set root directory to `apps/web`
+3. Add all environment variables from `apps/web/.env.local`
+4. Set `NEXT_PUBLIC_APP_URL` and `GITHUB_REDIRECT_URI` to your Vercel URL
+5. Deploy
+
+### Update GitHub App
+
+After deployment, update your GitHub App's webhook URL to:
+```
+https://your-railway-url.up.railway.app/webhook/github
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+---
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+## 📊 Database Schema
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
+```sql
+users          -- GitHub OAuth users
+repos          -- Connected GitHub repositories  
+pull_requests  -- PRs that have been reviewed
+reviews        -- AI review results with scores
+comments       -- Individual inline review comments
 ```
 
-Without global `turbo`:
+---
 
-```sh
-npx turbo link
-bun exec turbo link
-bun exec turbo link
-```
+## 🔧 Environment Variables Reference
 
-## Useful Links
+### Worker (`apps/worker/.env`)
 
-Learn more about the power of Turborepo:
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DATABASE_URL` | Neon PostgreSQL connection string | ✅ |
+| `GITHUB_APP_ID` | GitHub App ID | ✅ |
+| `GITHUB_CLIENT_ID` | GitHub App Client ID | ✅ |
+| `GITHUB_CLIENT_SECRET` | GitHub App Client Secret | ✅ |
+| `GITHUB_WEBHOOK_SECRET` | Webhook signature secret | ✅ |
+| `GITHUB_PRIVATE_KEY` | PEM key content (production) | ✅ |
+| `GITHUB_PRIVATE_KEY_PATH` | Path to PEM file (development) | ✅ |
+| `ANTHROPIC_API_KEY` | Claude API key | ✅ |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis URL | ✅ |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis token | ✅ |
 
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+### Dashboard (`apps/web/.env.local`)
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DATABASE_URL` | Neon PostgreSQL connection string | ✅ |
+| `GITHUB_CLIENT_ID` | GitHub App Client ID | ✅ |
+| `GITHUB_CLIENT_SECRET` | GitHub App Client Secret | ✅ |
+| `GITHUB_REDIRECT_URI` | OAuth callback URL | ✅ |
+| `SESSION_SECRET` | Cookie signing secret (32+ chars) | ✅ |
+| `NEXT_PUBLIC_APP_URL` | Public app URL | ✅ |
+
+---
+
+## 💡 How It Works
+
+1. **Install** the PRPilot GitHub App on your repository
+2. **Open a PR** — GitHub sends a webhook to the worker
+3. **Queue** — The webhook handler queues a review job instantly (no timeout risk)
+4. **Fetch** — The worker fetches the PR diff from GitHub API
+5. **Parse** — Non-reviewable files (lock files, binaries) are filtered out
+6. **Review** — The diff is sent to Claude with a structured prompt
+7. **Score** — An overall score (0-100) is calculated from category scores
+8. **Comment** — Inline review comments are posted to the PR via GitHub API
+9. **Save** — Results are persisted to PostgreSQL
+10. **Dashboard** — View all reviews, scores, and trends at your dashboard URL
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feat/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feat/amazing-feature`)
+5. Open a Pull Request (PRPilot will review it automatically 🤖)
+
+---
+
+## 📄 License
+
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+## 👨‍💻 Built By
+
+**Abhishek Rai** — [@Abhishek16r](https://github.com/Abhishek16r)
+
+> Built as a portfolio project to demonstrate full-stack AI application development with modern tooling.
+
+---
+
+*If this project helped you, please give it a ⭐ on GitHub!*
