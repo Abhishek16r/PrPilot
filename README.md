@@ -2,8 +2,6 @@
 
 > Senior developer reviews every PR automatically. Costs $0.
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app)
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com)
 
 **PRPilot** is an open-source GitHub App that automatically reviews every pull request using Claude AI. When a PR is opened, PRPilot fetches the diff, analyzes it for bugs, security issues, and code quality, then posts inline comments and an overall score — just like a senior developer would.
 
