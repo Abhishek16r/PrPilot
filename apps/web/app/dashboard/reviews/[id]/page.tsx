@@ -65,138 +65,275 @@ export default async function ReviewDetailPage({
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#0d0d14',
+      background: 'linear-gradient(180deg, #0d0d14 0%, #0a0a0f 100%)',
       color: 'white',
       fontFamily: 'system-ui, -apple-system, sans-serif',
     }}>
-      <NavHeader username={session.username} avatarUrl={session.avatarUrl} />
+      <NavHeader username={session.username} email={session.email} avatarUrl={session.avatarUrl} />
 
-      <div style={{ padding: '24px 28px', maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={{
+        padding: 'clamp(1.5rem, 4vw, 2rem)',
+        maxWidth: '1400px',
+        margin: '0 auto',
+        width: '100%',
+        boxSizing: 'border-box',
+      }}>
 
         {/* Back button */}
-        <Link href="/dashboard" style={{
-          display: 'inline-flex', alignItems: 'center', gap: '6px',
-          fontSize: '13px', color: 'rgba(255,255,255,0.4)',
-          textDecoration: 'none', marginBottom: '20px',
-          padding: '6px 10px', borderRadius: '6px',
-          border: '0.5px solid rgba(255,255,255,0.08)',
-          background: 'rgba(255,255,255,0.03)',
-          transition: 'all 0.15s',
+        <Link href="/dashboard" className="back-btn" style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontSize: 'clamp(0.8rem, 1.5vw, 0.875rem)',
+          color: 'rgba(255,255,255,0.85)',
+          fontWeight: '500',
+          textDecoration: 'none',
+          marginBottom: 'clamp(1rem, 2.5vw, 1.75rem)',
+          padding: '8px 16px',
+          borderRadius: '20px',
+          border: '1px solid rgba(99,102,241,0.3)',
+          background: 'rgba(99,102,241,0.12)',
+          transition: 'all 0.2s ease',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
         }}>
-          ← Back to Dashboard
+          <span>←</span> Back to Dashboard
         </Link>
 
         {/* PR Info */}
-        <div style={{ marginBottom: '20px' }}>
-          <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ marginBottom: 'clamp(1rem, 3vw, 1.5rem)' }}>
+          <div style={{
+            fontSize: 'clamp(0.75rem, 1.5vw, 0.85rem)',
+            color: 'rgba(255,255,255,0.65)',
+            marginBottom: '0.75rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'clamp(0.5rem, 1vw, 1rem)',
+            flexWrap: 'wrap',
+          }}>
             <span>{pr.repo_name as string}</span>
-            <span style={{ background: 'rgba(255,255,255,0.06)', padding: '1px 7px', borderRadius: '4px', fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.3)' }}>
+            <span style={{
+              background: 'rgba(99,102,241,0.2)',
+              padding: '2px 8px',
+              borderRadius: '6px',
+              fontSize: 'clamp(0.7rem, 1.5vw, 0.85rem)',
+              fontWeight: '600',
+              color: '#818cf8',
+              border: '1px solid rgba(99,102,241,0.3)',
+            }}>
               PR #{pr.github_pr_number as number}
             </span>
           </div>
-          <h1 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '6px', lineHeight: 1.3 }}>
+          <h1 style={{
+            fontSize: 'clamp(1.5rem, 5vw, 2.2rem)',
+            fontWeight: '700',
+            marginBottom: '0.75rem',
+            lineHeight: 1.3,
+            letterSpacing: '-0.01em',
+          }}>
             {pr.title as string}
           </h1>
-          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.35)' }}>
-            by {pr.author_github_login as string}
+          <div style={{
+            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+            color: 'rgba(255,255,255,0.55)',
+          }}>
+            by <span style={{ fontWeight: '600', color: 'rgba(255,255,255,0.85)' }}>@{pr.author_github_login as string}</span>
           </div>
         </div>
 
         {/* Score Card */}
         {review && (
           <div style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '0.5px solid rgba(255,255,255,0.08)',
-            borderRadius: '12px',
-            padding: '20px',
-            marginBottom: '16px',
+            background: 'linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(139,92,246,0.04) 100%)',
+            border: '1px solid rgba(99,102,241,0.2)',
+            borderRadius: '16px',
+            padding: 'clamp(1.25rem, 3vw, 1.75rem)',
+            marginBottom: 'clamp(1rem, 3vw, 1.5rem)',
+            backdropFilter: 'blur(10px)',
           }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <div className="responsive-score-grid" style={{
+              alignItems: 'start',
+              marginBottom: 'clamp(1rem, 3vw, 1.5rem)',
+            }}>
               <div>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+                <div style={{
+                  fontSize: 'clamp(0.7rem, 1.5vw, 0.8rem)',
+                  color: 'rgba(255,255,255,0.6)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  marginBottom: '0.5rem',
+                  fontWeight: '600',
+                }}>
                   Overall Score
                 </div>
-                <div style={{ fontSize: '36px', fontWeight: '700', color: scoreColor, lineHeight: 1 }}>
-                  {score}<span style={{ fontSize: '16px', opacity: 0.5 }}>/100</span>
+                <div style={{
+                  fontSize: 'clamp(2rem, 8vw, 3.5rem)',
+                  fontWeight: '700',
+                  color: scoreColor,
+                  lineHeight: 1,
+                  letterSpacing: '-0.02em',
+                }}>
+                  {score}<span style={{ fontSize: 'clamp(0.9rem, 3vw, 1.5rem)', opacity: 0.55 }}>/100</span>
                 </div>
               </div>
-              <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', fontWeight: '500' }}>
-                Review Summary
+              <div>
+                <div style={{
+                  fontSize: 'clamp(0.85rem, 2vw, 1rem)',
+                  color: 'rgba(255,255,255,0.85)',
+                  fontWeight: '600',
+                  marginBottom: '0.75rem',
+                }}>
+                  Review Summary
+                </div>
+                <p style={{
+                  fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                  color: 'rgba(255,255,255,0.8)',
+                  lineHeight: 1.6,
+                  margin: 0,
+                }}>
+                  {review.summary as string}
+                </p>
               </div>
             </div>
 
-            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, marginBottom: '16px' }}>
-              {review.summary as string}
-            </p>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+            {/* Category Scores */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))',
+              gap: 'clamp(0.75rem, 1.5vw, 1rem)',
+            }}>
               {[
                 { label: '🐛 Bugs', score: review.bug_score as number },
                 { label: '🔒 Security', score: review.security_score as number },
                 { label: '⚡ Performance', score: review.performance_score as number },
                 { label: '🎨 Style', score: review.style_score as number },
-              ].map((cat) => (
-                <div key={cat.label} style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  borderRadius: '8px', padding: '10px', textAlign: 'center',
-                }}>
-                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', marginBottom: '4px' }}>{cat.label}</div>
-                  <div style={{ fontSize: '18px', fontWeight: '600' }}>{cat.score ?? '—'}</div>
-                </div>
-              ))}
+              ].map((cat) => {
+                const score = cat.score
+                const isDefined = score !== undefined && score !== null
+                const catStyle = !isDefined
+                  ? { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)', glow: 'transparent' }
+                  : score >= 80
+                    ? { bg: 'rgba(74,222,128,0.06)', border: 'rgba(74,222,128,0.2)', color: '#4ade80', glow: 'rgba(74,222,128,0.25)' }
+                    : score >= 60
+                      ? { bg: 'rgba(251,191,36,0.06)', border: 'rgba(251,191,36,0.2)', color: '#fbbf24', glow: 'rgba(251,191,36,0.25)' }
+                      : { bg: 'rgba(248,113,113,0.06)', border: 'rgba(248,113,113,0.2)', color: '#f87171', glow: 'rgba(248,113,113,0.25)' }
+
+                return (
+                  <div key={cat.label} style={{
+                    background: catStyle.bg,
+                    borderRadius: '12px',
+                    padding: 'clamp(0.75rem, 2vw, 1rem)',
+                    textAlign: 'center',
+                    border: `1px solid ${catStyle.border}`,
+                    transition: 'all 0.2s ease',
+                  }}>
+                    <div style={{
+                      fontSize: 'clamp(0.7rem, 1.5vw, 0.85rem)',
+                      color: 'rgba(255,255,255,0.65)',
+                      marginBottom: '0.5rem',
+                      fontWeight: '600',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.02em',
+                    }}>{cat.label}</div>
+                    <div style={{
+                      fontSize: 'clamp(1.25rem, 3vw, 1.75rem)',
+                      fontWeight: '700',
+                      color: catStyle.color,
+                      textShadow: `0 0 10px ${catStyle.glow}`,
+                    }}>{cat.score ?? '—'}</div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}
 
         {/* Issues */}
         <div style={{
-          background: 'rgba(255,255,255,0.02)',
-          border: '0.5px solid rgba(255,255,255,0.07)',
-          borderRadius: '12px',
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: '16px',
           overflow: 'hidden',
+          backdropFilter: 'blur(10px)',
         }}>
-          <div style={{ padding: '14px 18px', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
-            <span style={{ fontSize: '13px', fontWeight: '500' }}>
+          <div style={{
+            padding: 'clamp(1rem, 2vw, 1.5rem)',
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+          }}>
+            <span style={{
+              fontSize: 'clamp(0.9rem, 2vw, 1.1rem)',
+              fontWeight: '600',
+              letterSpacing: '-0.01em',
+            }}>
               Issues Found ({comments.length})
             </span>
           </div>
 
           {comments.length === 0 ? (
-            <div style={{ padding: '48px', textAlign: 'center', color: 'rgba(255,255,255,0.25)' }}>
-              <div style={{ fontSize: '32px', marginBottom: '8px' }}>✅</div>
-              <div style={{ fontSize: '14px' }}>No issues — great code!</div>
+            <div style={{
+              padding: 'clamp(2rem, 6vw, 3.5rem)',
+              textAlign: 'center',
+              color: 'rgba(255,255,255,0.25)',
+            }}>
+              <div style={{ fontSize: 'clamp(1.75rem, 5vw, 2.5rem)', marginBottom: '0.75rem' }}>✅</div>
+              <div style={{ fontSize: 'clamp(0.9rem, 2vw, 1.1rem)', fontWeight: '600' }}>No issues — great code!</div>
             </div>
           ) : (
-            comments.map((comment: any) => (
-              <div key={comment.id} style={{
-                padding: '14px 18px',
-                borderBottom: '0.5px solid rgba(255,255,255,0.04)',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
-                  <span style={{
-                    background: SEVERITY_BG[comment.severity] ?? 'rgba(255,255,255,0.08)',
-                    color: SEVERITY_COLOR[comment.severity] ?? 'white',
-                    padding: '2px 8px', borderRadius: '999px',
-                    fontSize: '11px', fontWeight: '600',
-                    textTransform: 'uppercase', letterSpacing: '0.03em',
+            <div style={{ overflow: 'auto' }}>
+              {comments.map((comment: any, idx: number) => (
+                <div key={comment.id} style={{
+                  padding: 'clamp(1rem, 2vw, 1.5rem)',
+                  borderBottom: idx !== comments.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                  transition: 'all 0.2s ease',
+                }}>
+                  <div className="comment-header-row" style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    marginBottom: '0.75rem',
                   }}>
-                    {comment.severity}
-                  </span>
-                  <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>
-                    {CATEGORY_EMOJI[comment.category] ?? '📝'} {comment.category}
-                  </span>
-                  <span style={{
-                    fontSize: '11px', color: 'rgba(255,255,255,0.25)',
-                    marginLeft: 'auto', fontFamily: 'monospace',
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <span style={{
+                        background: SEVERITY_BG[comment.severity] ?? 'rgba(255,255,255,0.08)',
+                        color: SEVERITY_COLOR[comment.severity] ?? 'white',
+                        padding: '3px 8px',
+                        borderRadius: '999px',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.03em',
+                        border: `1px solid ${SEVERITY_COLOR[comment.severity] ?? 'rgba(255,255,255,0.1)'}`,
+                        opacity: 0.9,
+                      }}>
+                        {comment.severity}
+                      </span>
+                      <span style={{
+                        fontSize: 'clamp(0.8rem, 1.5vw, 0.9rem)',
+                        color: 'rgba(255,255,255,0.65)',
+                        fontWeight: '500',
+                      }}>
+                        {CATEGORY_EMOJI[comment.category] ?? '📝'} {comment.category}
+                      </span>
+                    </div>
+                    <span className="comment-file-path" style={{
+                      fontSize: 'clamp(0.7rem, 1.2vw, 0.85rem)',
+                      color: 'rgba(255,255,255,0.55)',
+                      fontFamily: 'monospace',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {comment.file_path}{comment.line ? `:${comment.line}` : ''}
+                    </span>
+                  </div>
+                  <p style={{
+                    fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                    color: 'rgba(255,255,255,0.85)',
+                    lineHeight: 1.6,
+                    margin: 0,
+                    wordBreak: 'break-word',
                   }}>
-                    {comment.file_path}{comment.line ? `:${comment.line}` : ''}
-                  </span>
+                    {comment.body}
+                  </p>
                 </div>
-                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, margin: 0 }}>
-                  {comment.body}
-                </p>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
       </div>

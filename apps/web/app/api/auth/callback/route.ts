@@ -73,6 +73,7 @@ export async function GET(request: NextRequest) {
     const session = Buffer.from(JSON.stringify({
       userId,
       username: githubUser.login,
+      email: githubUser.email ?? '',
       avatarUrl: githubUser.avatar_url,
     })).toString('base64')
 

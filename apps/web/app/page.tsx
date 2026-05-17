@@ -23,120 +23,196 @@ export default async function HomePage() {
   return (
     <main style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #0f0f1a 100%)',
+      background: 'linear-gradient(135deg, #07070c 0%, #0f0f1c 50%, #07070c 100%)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '2rem',
+      padding: 'clamp(2rem, 5vw, 4rem) max(1.5rem, env(safe-area-inset-left), env(safe-area-inset-right))',
       fontFamily: 'system-ui, -apple-system, sans-serif',
       color: 'white',
+      position: 'relative',
+      overflow: 'hidden',
     }}>
-      <div style={{ maxWidth: '680px', width: '100%', textAlign: 'center' }}>
+      {/* Decorative Background Nebulas */}
+      <div style={{
+        position: 'absolute',
+        top: '-10%',
+        left: '-10%',
+        width: '50vw',
+        height: '50vw',
+        background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, rgba(99,102,241,0) 70%)',
+        borderRadius: '50%',
+        pointerEvents: 'none',
+        zIndex: 0,
+      }} />
+      <div style={{
+        position: 'absolute',
+        bottom: '-10%',
+        right: '-10%',
+        width: '50vw',
+        height: '50vw',
+        background: 'radial-gradient(circle, rgba(139,92,246,0.06) 0%, rgba(139,92,246,0) 70%)',
+        borderRadius: '50%',
+        pointerEvents: 'none',
+        zIndex: 0,
+      }} />
 
-        {/* Badge */}
+      {/* Header */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        padding: 'clamp(1rem, 3vw, 1.5rem) clamp(1rem, 5vw, 3rem)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        maxWidth: '1440px',
+        margin: '0 auto',
+        zIndex: 10,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '1.5rem', filter: 'drop-shadow(0 0 10px rgba(99,102,241,0.3))' }}>🤖</span>
+          <span style={{ fontWeight: '700', fontSize: '1.25rem', letterSpacing: '-0.02em', background: 'linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>PRPilot</span>
+        </div>
+        <Link href="/api/auth/login" className="header-signin-btn" style={{
+          fontSize: '0.875rem',
+          fontWeight: '500',
+          padding: '8px 20px',
+          borderRadius: '20px',
+          background: 'rgba(255,255,255,0.06)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          color: '#ffffff',
+          transition: 'all 0.2s ease',
+          textDecoration: 'none',
+        }}>
+          Sign In
+        </Link>
+      </div>
+
+      <div style={{ maxWidth: '1140px', width: '100%', textAlign: 'center', zIndex: 5, padding: '0 1rem', marginTop: 'clamp(1.5rem, 4vw, 2.5rem)' }}>
+
+        {/* Capsule Badge */}
         <div style={{
           display: 'inline-flex',
           alignItems: 'center',
-          gap: '6px',
-          background: 'rgba(99,102,241,0.15)',
-          border: '1px solid rgba(99,102,241,0.3)',
+          gap: '8px',
+          background: 'rgba(99,102,241,0.08)',
+          border: '1px solid rgba(99,102,241,0.25)',
           borderRadius: '999px',
-          padding: '6px 16px',
-          fontSize: '13px',
+          padding: '6px 14px',
+          fontSize: 'clamp(0.75rem, 1.5vw, 0.85rem)',
           color: '#a5b4fc',
-          marginBottom: '2rem',
+          marginBottom: 'clamp(1.5rem, 6vw, 2.5rem)',
+          fontWeight: '500',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 4px 12px rgba(99,102,241,0.1)',
         }}>
-          <span>✨</span>
+          <span style={{
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            background: '#818cf8',
+            boxShadow: '0 0 8px #818cf8',
+            display: 'inline-block'
+          }} />
           <span>AI-Powered Code Reviews — Free Forever</span>
         </div>
 
-        {/* Title */}
-        <div style={{ fontSize: '4rem', marginBottom: '0.5rem' }}>🤖</div>
-        <h1 style={{
-          fontSize: '3.5rem',
-          fontWeight: '800',
-          background: 'linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          lineHeight: 1.2,
-          marginBottom: '1rem',
-        }}>
-          PRPilot
-        </h1>
-        <p style={{ fontSize: '1.2rem', color: '#94a3b8', lineHeight: 1.6, marginBottom: '2rem' }}>
-          Senior developer reviews every PR automatically.<br />
-          Catches bugs, security issues, and bad patterns instantly.
-        </p>
+        {/* Title Section */}
+        <div style={{ marginBottom: 'clamp(2rem, 6vw, 3rem)' }}>
+          <h1 style={{
+            fontSize: 'clamp(2.2rem, 7vw, 4.25rem)',
+            fontWeight: '900',
+            lineHeight: '1.15',
+            color: '#ffffff',
+            letterSpacing: '-0.03em',
+            marginBottom: 'clamp(1rem, 3vw, 1.5rem)',
+          }}>
+            Review any pull request <br />
+            <span style={{
+              background: 'linear-gradient(135deg, #818cf8 0%, #c084fc 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              textShadow: '0 0 40px rgba(129, 140, 248, 0.15)',
+            }}>
+              in seconds.
+            </span>
+          </h1>
+          <p style={{
+            fontSize: 'clamp(0.95rem, 2.5vw, 1.15rem)',
+            color: 'rgba(255,255,255,0.7)',
+            lineHeight: '1.6',
+            maxWidth: '640px',
+            margin: '0 auto',
+          }}>
+            PRPilot integrates directly with your GitHub workflow, automatically providing 
+            instant senior-developer feedback on every pull request to catch bugs, vulnerabilities, 
+            and style issues before they merge.
+          </p>
+        </div>
 
-        {/* Features */}
+        {/* Features Grid */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '1rem',
-          marginBottom: '2.5rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))',
+          gap: 'clamp(1rem, 3vw, 1.5rem)',
+          marginBottom: 'clamp(3rem, 7vw, 4rem)',
         }}>
           {[
-            { icon: '🐛', title: 'Bug Detection', desc: 'Catches logic errors before merge' },
-            { icon: '🔒', title: 'Security Scan', desc: 'Spots vulnerabilities instantly' },
-            { icon: '📊', title: 'Score & Track', desc: 'Watch quality improve over time' },
+            { icon: '🐛', title: 'Bug Detection', desc: 'Catches complex logic errors and flaws before they reach production.' },
+            { icon: '🔒', title: 'Security Scan', desc: 'Spots critical vulnerabilities, secrets leaks, and unsafe patterns instantly.' },
+            { icon: '📊', title: 'Score & Track', desc: 'Provides detailed quality scorecards and metrics to track improvement over time.' },
           ].map((f) => (
-            <div key={f.title} style={{
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.1)',
+            <div key={f.title} className="premium-feature-card" style={{
+              background: 'linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(139,92,246,0.03) 100%)',
+              border: '1px solid rgba(99,102,241,0.25)',
               borderRadius: '16px',
-              padding: '1.5rem 1rem',
+              padding: 'clamp(1.5rem, 4vw, 2rem)',
+              backdropFilter: 'blur(10px)',
+              position: 'relative',
+              overflow: 'hidden',
+              textAlign: 'left',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
             }}>
-              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{f.icon}</div>
-              <div style={{ fontWeight: '600', fontSize: '0.95rem', marginBottom: '0.25rem' }}>{f.title}</div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{f.desc}</div>
+              <div style={{ fontSize: 'clamp(2rem, 5vw, 2.5rem)', marginBottom: '1rem' }}>{f.icon}</div>
+              <div style={{ fontWeight: '600', fontSize: 'clamp(1rem, 3vw, 1.1rem)', color: '#ffffff', marginBottom: '0.5rem' }}>{f.title}</div>
+              <div style={{ fontSize: 'clamp(0.8rem, 2.5vw, 0.9rem)', color: 'rgba(255,255,255,0.6)', lineHeight: '1.5' }}>{f.desc}</div>
             </div>
           ))}
         </div>
 
-        {/* CTA */}
-        <Link href="/api/auth/login" style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '10px',
-          background: 'white',
-          color: '#0f172a',
-          padding: '14px 32px',
-          borderRadius: '12px',
-          fontWeight: '700',
-          fontSize: '1rem',
-          textDecoration: 'none',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
-        }}>
-          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-          </svg>
-          Continue with GitHub
-        </Link>
-
-        <p style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#475569' }}>
-          Free forever · No credit card required · Open source
-        </p>
-
-        {/* Real Stats */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '3rem',
-          marginTop: '3rem',
-          paddingTop: '2rem',
-          borderTop: '1px solid rgba(255,255,255,0.08)',
-        }}>
-          {[
-            { value: totalReviews > 0 ? `${totalReviews}+` : '$0', label: totalReviews > 0 ? 'PRs Reviewed' : 'Monthly cost' },
-            { value: avgScore > 0 ? `${avgScore}/100` : '<60s', label: avgScore > 0 ? 'Avg Score' : 'Review time' },
-            { value: totalIssues > 0 ? `${totalIssues}+` : '100%', label: totalIssues > 0 ? 'Issues Found' : 'Automated' },
-          ].map((stat) => (
-            <div key={stat.label}>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#a5b4fc' }}>{stat.value}</div>
-              <div style={{ fontSize: '0.75rem', color: '#475569', marginTop: '2px' }}>{stat.label}</div>
-            </div>
-          ))}
+        {/* CTA Button */}
+        <div style={{ marginBottom: 'clamp(2rem, 6vw, 3rem)' }}>
+          <Link href="/api/auth/login" className="premium-cta-btn" style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '10px',
+            background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+            color: '#ffffff',
+            padding: 'clamp(0.875rem, 2vw, 1.1rem) clamp(1.75rem, 5vw, 2.25rem)',
+            borderRadius: '30px',
+            fontWeight: '600',
+            fontSize: 'clamp(0.95rem, 2vw, 1.05rem)',
+            textDecoration: 'none',
+            border: '1px solid rgba(255,255,255,0.15)',
+            boxShadow: '0 4px 20px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
+            transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+            cursor: 'pointer',
+          }}>
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.15))' }}>
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+            <span>Get Started with GitHub</span>
+          </Link>
+          <p style={{
+            marginTop: '1rem',
+            fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
+            color: 'rgba(255,255,255,0.4)',
+          }}>
+            Free forever · No credit card required · Open source
+          </p>
         </div>
 
       </div>

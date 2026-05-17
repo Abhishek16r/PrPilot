@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 export interface Session {
   userId: string
   username: string
+  email?: string
   avatarUrl: string
 }
 

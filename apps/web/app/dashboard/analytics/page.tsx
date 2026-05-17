@@ -9,6 +9,7 @@ export default async function AnalyticsPage() {
   return (
     <AnalyticsClient
       username={session.username}
+      email={session.email}
       avatarUrl={session.avatarUrl}
     />
   )
