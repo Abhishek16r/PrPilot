@@ -303,12 +303,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-## 📄 License
-
-MIT License — see [LICENSE](LICENSE) for details.
-
----
-
 ## 👨‍💻 Built By
 
 **Abhishek Rai** — [@Abhishek16r](https://github.com/Abhishek16r)
