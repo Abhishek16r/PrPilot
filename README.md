@@ -23,7 +23,6 @@
 ## 🚀 Live Demo
 
 - **Dashboard:** [pr-pilot-web.vercel.app](https://pr-pilot-web.vercel.app)
-- **Worker:** [prpilotworker-production.up.railway.app](https://prpilotworker-production.up.railway.app)
 
 ---
 
