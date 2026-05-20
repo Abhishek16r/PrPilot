@@ -23,6 +23,7 @@
 ## 🚀 Live Demo
 
 - **Dashboard:** [pr-pilot-web.vercel.app](https://pr-pilot-web.vercel.app)
+- **GitHub App:** [Add to GitHub](https://github.com/apps/prpilot-abhishek)
 
 ---
 
